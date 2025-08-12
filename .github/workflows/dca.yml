@@ -6,6 +6,7 @@ on:
 
 jobs:
   run:
+    if: ${{ vars.DCA_PAUSE != '1' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
