@@ -19,10 +19,6 @@ from urllib.parse import urlencode
 import jwt          # PyJWT
 import requests
 from requests import HTTPError
-
-import sys
-if os.getenv("DCA_PAUSE") == "1":
-    print("Paused by DCA_PAUSE"); sys.exit(0)
   
 # ===== 설정 =====
 KST = ZoneInfo("Asia/Seoul")
@@ -207,3 +203,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
