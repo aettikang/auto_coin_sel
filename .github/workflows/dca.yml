@@ -1,0 +1,23 @@
+name: DCA Noon Weekdays (Upbit)
+on:
+  schedule:
+    - cron: "0 3 * * 1-5"   # 12:00 KST = 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install requests tzdata pyjwt
+      - name: Run bot
+        env:
+          UPBIT_ACCESS_KEY: ${{ secrets.UPBIT_ACCESS_KEY }}
+          UPBIT_SECRET_KEY: ${{ secrets.UPBIT_SECRET_KEY }}
+          # 선택: 일일예산/수수료 커스터마이즈
+          # DAILY_BUDGET_KRW: "40000"
+          # UPBIT_KRW_FEE: "0.0005"
+        run: python upbit_noon_weekday_dca.py
