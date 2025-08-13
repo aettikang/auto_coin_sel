@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 GitHub Actions/서버용 업비트 DCA 봇
-- 평일(월~금) 정오 12:00 KST에 KRW-BTC, KRW-ETH 시장가 매수
+- 평일(월~금) 오전 10:00 KST에 KRW-BTC, KRW-ETH 시장가 매수
 - 수수료율 반영(총지출 ≤ 일일예산), 최소 주문 5,000원 보장
 - 잔액/평가액 조회 없이 '주문만' 수행
 필수 Secrets/환경변수:
@@ -26,7 +26,7 @@ KST = ZoneInfo("Asia/Seoul")
 # 목표 시각(오전 10시), 허용 윈도(분)
 TARGET_HOUR_KST    = 10
 STRICT_TIME_ONLY   = True
-WINDOW_MINUTES     = 15       # 11:00~11:15 허용
+WINDOW_MINUTES     = 15       # 10:00~10:15 허용
 
 TIMEOUT            = 12       # HTTP 타임아웃(초)
 
@@ -203,6 +203,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 
