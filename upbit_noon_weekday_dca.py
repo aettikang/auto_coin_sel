@@ -24,7 +24,7 @@ from requests import HTTPError
 KST = ZoneInfo("Asia/Seoul")
 
 # 목표 시각(오전 11시), 허용 윈도(분)
-TARGET_HOUR_KST    = 13
+TARGET_HOUR_KST    = 11
 STRICT_TIME_ONLY   = True
 WINDOW_MINUTES     = 15       # 11:00~11:02 허용
 
@@ -203,6 +203,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 
