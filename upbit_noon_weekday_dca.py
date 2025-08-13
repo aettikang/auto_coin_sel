@@ -26,7 +26,7 @@ KST = ZoneInfo("Asia/Seoul")
 # 목표 시각(오전 11시), 허용 윈도(분)
 TARGET_HOUR_KST    = 11
 STRICT_TIME_ONLY   = True
-WINDOW_MINUTES     = 2        # 11:00~11:02 허용
+WINDOW_MINUTES     = 15       # 11:00~11:02 허용
 
 TIMEOUT            = 12       # HTTP 타임아웃(초)
 
@@ -203,4 +203,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
