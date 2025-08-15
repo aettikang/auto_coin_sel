@@ -7,14 +7,14 @@ on:
   workflow_dispatch: {}
 
 env:
-  # ===== 운영 기본값(레포 단위 변수/시크릿으로도 덮어쓸 수 있습니다) =====
-  TARGET_HOUR_KST: "10"         # 원하는 정시(KST). 예) 11시는 "11"
-  STRICT_TIME_ONLY: "true"      # true면 목표시각±윈도에서만 주문, false면 실행되면 바로 주문
+  # ===== 운영 기본값 =====
+  TARGET_HOUR_KST: "10"         # 원하는 정시(KST)
+  STRICT_TIME_ONLY: "true"      # true면 목표시각±윈도에서만 주문
   WINDOW_MINUTES: "15"          # 허용 윈도우(분)
   DAILY_BUDGET_KRW: "40000"     # 총 일일 예산(수수료 포함)
   UPBIT_KRW_FEE: "0.0005"       # 수수료율(기본 0.05%)
   UPBIT_MIN_ORDER_KRW: "5000"   # 업비트 KRW 최소 주문액
-  DCA_PAUSE: "0"                # 1이면 즉시 종료(응급정지)
+  DCA_PAUSE: "0"                # 1이면 즉시 종료
 
 jobs:
   run:
@@ -44,3 +44,37 @@ jobs:
           DCA_PAUSE: ${{ env.DCA_PAUSE }}
         run: |
           python upbit_noon_weekday_dca.py
+
+  notify:
+    name: Notify Telegram
+    needs: [run]
+    if: ${{ always() }}   # run이 실패해도 반드시 알림 전송
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build message
+        id: mk
+        run: |
+          if [ "${{ needs.run.result }}" = "success" ]; then
+            STATUS="✅ SUCCESS"
+          else
+            STATUS="❌ FAILURE"
+          fi
+          MSG="[$GITHUB_REPOSITORY]
+${{ github.workflow }} #${{ github.run_number }} → ${STATUS}
+Event:  ${{ github.event_name }}
+Branch: ${{ github.ref_name }}
+Actor:  ${{ github.actor }}
+URL:    https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "msg<<EOF" >> $GITHUB_OUTPUT
+          echo "$MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send Telegram
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEXT: ${{ steps.mk.outputs.msg }}
+        run: |
+          curl -s "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            -d "chat_id=${CHAT_ID}" \
+            -d "text=${TEXT}"
