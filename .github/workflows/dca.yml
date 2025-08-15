@@ -2,13 +2,16 @@ name: DCA Weekdays (Upbit)
 
 on:
   schedule:
-    - cron: "0 1 * * 1-5"  # UTC 01:00 = KST 10:00, 평일만
+    - cron: "0 * * * 1-5"    # 평일 매시 정각(UTC)
   workflow_dispatch: {}
 
 env:
-  TARGET_HOUR_KST: "10"
+  # 시간 설정
+  ALLOWED_HOURS_KST: "4,5,6,7,8,9,10"  # 새벽4~오전10시 매시간 시도
+  WINDOW_MINUTES: "30"                 # 각 정시 시작 후 30분
   STRICT_TIME_ONLY: "true"
-  WINDOW_MINUTES: "30"       # 여기서도 동일하게 30분 설정
+
+  # 예산/수수료/정지
   DAILY_BUDGET_KRW: "40000"
   UPBIT_KRW_FEE: "0.0005"
   UPBIT_MIN_ORDER_KRW: "5000"
@@ -31,20 +34,22 @@ jobs:
 
       - name: Run DCA bot
         env:
-          UPBIT_ACCESS_KEY: ${{ secrets.UPBIT_ACCESS_KEY }}
-          UPBIT_SECRET_KEY: ${{ secrets.UPBIT_SECRET_KEY }}
-          TARGET_HOUR_KST: ${{ env.TARGET_HOUR_KST }}
-          STRICT_TIME_ONLY: ${{ env.STRICT_TIME_ONLY }}
-          WINDOW_MINUTES: ${{ env.WINDOW_MINUTES }}
-          DAILY_BUDGET_KRW: ${{ env.DAILY_BUDGET_KRW }}
-          UPBIT_KRW_FEE: ${{ env.UPBIT_KRW_FEE }}
-          UPBIT_MIN_ORDER_KRW: ${{ env.UPBIT_MIN_ORDER_KRW }}
-          DCA_PAUSE: ${{ env.DCA_PAUSE }}
+          UPBIT_ACCESS_KEY:   ${{ secrets.UPBIT_ACCESS_KEY }}
+          UPBIT_SECRET_KEY:   ${{ secrets.UPBIT_SECRET_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALLOWED_HOURS_KST:  ${{ env.ALLOWED_HOURS_KST }}
+          WINDOW_MINUTES:     ${{ env.WINDOW_MINUTES }}
+          STRICT_TIME_ONLY:   ${{ env.STRICT_TIME_ONLY }}
+          DAILY_BUDGET_KRW:   ${{ env.DAILY_BUDGET_KRW }}
+          UPBIT_KRW_FEE:      ${{ env.UPBIT_KRW_FEE }}
+          UPBIT_MIN_ORDER_KRW:${{ env.UPBIT_MIN_ORDER_KRW }}
+          DCA_PAUSE:          ${{ env.DCA_PAUSE }}
         run: |
           python upbit_noon_weekday_dca.py
 
   notify:
-    name: Notify Telegram
+    name: Notify Telegram (summary)
     needs: [run]
     if: ${{ always() }}
     runs-on: ubuntu-latest
