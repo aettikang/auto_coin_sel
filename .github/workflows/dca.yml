@@ -1,24 +1,46 @@
-name: DCA Noon Weekdays (Upbit)
+name: DCA Weekdays (Upbit)
+
 on:
   schedule:
-    - cron: "0 1 * * 1-5"   # 10:00 KST = 01:00 UTC
+    # 매 정시마다 실행(평일). 파이썬이 TARGET_HOUR_KST와 WINDOW_MINUTES로 실제 주문 여부를 판단.
+    - cron: "0 * * * 1-5"
   workflow_dispatch: {}
+
+env:
+  # ===== 운영 기본값(레포 단위 변수/시크릿으로도 덮어쓸 수 있습니다) =====
+  TARGET_HOUR_KST: "10"         # 원하는 정시(KST). 예) 11시는 "11"
+  STRICT_TIME_ONLY: "true"      # true면 목표시각±윈도에서만 주문, false면 실행되면 바로 주문
+  WINDOW_MINUTES: "15"          # 허용 윈도우(분)
+  DAILY_BUDGET_KRW: "40000"     # 총 일일 예산(수수료 포함)
+  UPBIT_KRW_FEE: "0.0005"       # 수수료율(기본 0.05%)
+  UPBIT_MIN_ORDER_KRW: "5000"   # 업비트 KRW 최소 주문액
+  DCA_PAUSE: "0"                # 1이면 즉시 종료(응급정지)
 
 jobs:
   run:
-    if: ${{ vars.DCA_PAUSE != '1' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-      - run: pip install requests tzdata pyjwt
-      - name: Run bot
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests tzdata pyjwt
+
+      - name: Run DCA bot
         env:
           UPBIT_ACCESS_KEY: ${{ secrets.UPBIT_ACCESS_KEY }}
           UPBIT_SECRET_KEY: ${{ secrets.UPBIT_SECRET_KEY }}
-          # 선택: 일일예산/수수료 커스터마이즈
-          # DAILY_BUDGET_KRW: "40000"
-          # UPBIT_KRW_FEE: "0.0005"
-        run: python upbit_noon_weekday_dca.py
+          TARGET_HOUR_KST: ${{ env.TARGET_HOUR_KST }}
+          STRICT_TIME_ONLY: ${{ env.STRICT_TIME_ONLY }}
+          WINDOW_MINUTES: ${{ env.WINDOW_MINUTES }}
+          DAILY_BUDGET_KRW: ${{ env.DAILY_BUDGET_KRW }}
+          UPBIT_KRW_FEE: ${{ env.UPBIT_KRW_FEE }}
+          UPBIT_MIN_ORDER_KRW: ${{ env.UPBIT_MIN_ORDER_KRW }}
+          DCA_PAUSE: ${{ env.DCA_PAUSE }}
+        run: |
+          python upbit_noon_weekday_dca.py
