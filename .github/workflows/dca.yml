@@ -2,19 +2,19 @@ name: DCA Weekdays (Upbit)
 
 on:
   schedule:
-    # 매 정시마다 실행(평일). 파이썬이 TARGET_HOUR_KST와 WINDOW_MINUTES로 실제 주문 여부를 판단.
+    # 매 정시마다 실행(평일). 파이썬이 TARGET_HOUR_KST/WINDOW_MINUTES로 실제 주문 여부 판단.
     - cron: "0 * * * 1-5"
   workflow_dispatch: {}
 
 env:
   # ===== 운영 기본값 =====
   TARGET_HOUR_KST: "10"         # 원하는 정시(KST)
-  STRICT_TIME_ONLY: "true"      # true면 목표시각±윈도에서만 주문
+  STRICT_TIME_ONLY: "true"      # true: 목표시각±윈도에서만 주문, false: 실행 즉시 주문
   WINDOW_MINUTES: "15"          # 허용 윈도우(분)
   DAILY_BUDGET_KRW: "40000"     # 총 일일 예산(수수료 포함)
-  UPBIT_KRW_FEE: "0.0005"       # 수수료율(기본 0.05%)
+  UPBIT_KRW_FEE: "0.0005"       # KRW 마켓 수수료율(0.05%)
   UPBIT_MIN_ORDER_KRW: "5000"   # 업비트 KRW 최소 주문액
-  DCA_PAUSE: "0"                # 1이면 즉시 종료
+  DCA_PAUSE: "0"                # 1이면 즉시 종료(비상 정지)
 
 jobs:
   run:
@@ -51,29 +51,35 @@ jobs:
     if: ${{ always() }}   # run이 실패해도 반드시 알림 전송
     runs-on: ubuntu-latest
     steps:
-      - name: Build message
+      - name: Build message (safe heredoc)
         id: mk
+        shell: bash
         run: |
           if [ "${{ needs.run.result }}" = "success" ]; then
             STATUS="✅ SUCCESS"
           else
             STATUS="❌ FAILURE"
           fi
-          MSG="[$GITHUB_REPOSITORY]
+
+          cat > msg.txt <<EOF
+[${GITHUB_REPOSITORY}]
 ${{ github.workflow }} #${{ github.run_number }} → ${STATUS}
 Event:  ${{ github.event_name }}
 Branch: ${{ github.ref_name }}
 Actor:  ${{ github.actor }}
-URL:    https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          echo "msg<<EOF" >> $GITHUB_OUTPUT
-          echo "$MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+URL:    https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+EOF
+
+          MSG="$(cat msg.txt)"
+          echo "msg<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$MSG" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Send Telegram
         env:
-          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TEXT: ${{ steps.mk.outputs.msg }}
+          TEXT:    ${{ steps.mk.outputs.msg }}
         run: |
           curl -s "https://api.telegram.org/bot${TOKEN}/sendMessage" \
             -d "chat_id=${CHAT_ID}" \
