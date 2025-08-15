@@ -2,13 +2,13 @@ name: DCA Weekdays (Upbit)
 
 on:
   schedule:
-    - cron: "0 * * * 1-5"    # 평일 매시 정각(UTC)
+    - cron: "0 * * * 1-5"    # 평일 매시 정각(UTC) 실행 → 파이썬이 04~10시 KST & +30분 윈도우에서만 주문
   workflow_dispatch: {}
 
 env:
   # 시간 설정
-  ALLOWED_HOURS_KST: "4,5,6,7,8,9,10"  # 새벽4~오전10시 매시간 시도
-  WINDOW_MINUTES: "30"                 # 각 정시 시작 후 30분
+  ALLOWED_HOURS_KST: "4,5,6,7,8,9,10"  # 새벽 4시 ~ 오전 10시 (KST) 매시간 시도
+  WINDOW_MINUTES: "30"                 # 각 정시 시작 후 30분까지 주문 가능
   STRICT_TIME_ONLY: "true"
 
   # 예산/수수료/정지
@@ -43,7 +43,7 @@ jobs:
           STRICT_TIME_ONLY:   ${{ env.STRICT_TIME_ONLY }}
           DAILY_BUDGET_KRW:   ${{ env.DAILY_BUDGET_KRW }}
           UPBIT_KRW_FEE:      ${{ env.UPBIT_KRW_FEE }}
-          UPBIT_MIN_ORDER_KRW:${{ env.UPBIT_MIN_ORDER_KRW }}
+          UPBIT_MIN_ORDER_KRW: ${{ env.UPBIT_MIN_ORDER_KRW }}
           DCA_PAUSE:          ${{ env.DCA_PAUSE }}
         run: |
           python upbit_noon_weekday_dca.py
