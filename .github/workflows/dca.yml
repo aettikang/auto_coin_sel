@@ -2,7 +2,7 @@ name: DCA Weekdays (Upbit)
 
 on:
   schedule:
-    - cron: "0 * * * 1-5"        # 매시 정각(평일) 트리거, 실제 주문 여부는 파이썬이 판단
+    - cron: "0 1 * * 1-5"        # 매시 정각(평일) 트리거, 실제 주문 여부는 파이썬이 판단
   workflow_dispatch: {}
 
 env:
