@@ -27,7 +27,7 @@ KST = ZoneInfo("Asia/Seoul")
 # 목표 시각 및 윈도우(분) — 환경변수로 제어
 TARGET_HOUR_KST  = int(os.environ.get("TARGET_HOUR_KST", "10"))
 STRICT_TIME_ONLY = os.environ.get("STRICT_TIME_ONLY", "true").lower() == "true"
-WINDOW_MINUTES   = int(os.environ.get("WINDOW_MINUTES", "15"))
+WINDOW_MINUTES   = int(os.environ.get("WINDOW_MINUTES", "30"))  # 기본값 30분
 
 TIMEOUT = 12  # HTTP 타임아웃(초)
 
@@ -208,3 +208,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
