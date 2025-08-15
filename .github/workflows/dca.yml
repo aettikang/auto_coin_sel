@@ -2,13 +2,13 @@ name: DCA Weekdays (Upbit)
 
 on:
   schedule:
-    - cron: "0 1 * * 1-5"        # 매시 정각(평일) 트리거, 실제 주문 여부는 파이썬이 판단
+    - cron: "0 1 * * 1-5"  # UTC 01:00 = KST 10:00, 평일만
   workflow_dispatch: {}
 
 env:
   TARGET_HOUR_KST: "10"
   STRICT_TIME_ONLY: "true"
-  WINDOW_MINUTES: "15"
+  WINDOW_MINUTES: "30"       # 여기서도 동일하게 30분 설정
   DAILY_BUDGET_KRW: "40000"
   UPBIT_KRW_FEE: "0.0005"
   UPBIT_MIN_ORDER_KRW: "5000"
@@ -49,7 +49,7 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Build message (single-line with \n)
+      - name: Build message
         id: mk
         shell: bash
         run: |
